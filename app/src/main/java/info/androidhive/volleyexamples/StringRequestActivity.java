@@ -14,6 +14,14 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.util.Formatter;
+
 public class StringRequestActivity extends Activity {
 
 	private String TAG = StringRequestActivity.class.getSimpleName();
@@ -41,7 +49,11 @@ public class StringRequestActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				makeStringReq();
+				try {
+					makeStringReq();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}
@@ -56,15 +68,41 @@ public class StringRequestActivity extends Activity {
 			pDialog.hide();
 	}
 
+
+
+
+
+	static byte[] HmacSHA256(String data, byte[] key) throws Exception {
+		String algorithm="HmacSHA256";
+		Mac mac = Mac.getInstance(algorithm);
+		mac.init(new SecretKeySpec(key, algorithm));
+		return mac.doFinal(data.getBytes("UTF8"));
+	}
+
+	static byte[] getSignatureKey(String key, String dateStamp, String regionName, String serviceName) throws Exception {
+		byte[] kSecret = ("AWS4" + key).getBytes("UTF8");
+		byte[] kDate = HmacSHA256(dateStamp, kSecret);
+		byte[] kRegion = HmacSHA256(regionName, kDate);
+		byte[] kService = HmacSHA256(serviceName, kRegion);
+		byte[] kSigning = HmacSHA256("aws4_request", kService);
+		return kSigning;
+	}
+
 	/**
 	 * Making json object request
 	 * */
-	private void makeStringReq() {
+	private void makeStringReq() throws Exception {
 		showProgressDialog();
-		StringRequest strReq = new StringRequest(Method.GET,
-				"http://api.walmartlabs.com/v1/search?apiKey=52pcepcteuhhwx7gtg5z7dbe&query="
-						+ "Green beans", new Response.Listener<String>() {
+		//StringRequest strReq = new StringRequest(Method.GET,
+				//"http://api.walmartlabs.com/v1/search?apiKey=52pcepcteuhhwx7gtg5z7dbe&query="
+						//+ "apples", new Response.Listener<String>() {
 
+byte[] test = getSignatureKey("Z98+BD38JMHybp4hgYlHAoJ2dShEWYmIGGDfeANJ", "2016-11-18", "us-east-1", "AWSECommerceService");
+System.out.println("blah = " + test.toString());
+		String hmac = hamc(test);
+		StringRequest strReq = new StringRequest(Method.GET,
+		"http://webservices.amazon.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=AKIAIDAFRAB6CFIGFNNA&AssociateTag=draft05a-20&Operation=ItemSearch&Keywords=the%20hunger%20games&SearchIndex=Books&Timestamp=2016-11-18&signature="
+		+ test.toString(), new Response.Listener<String>() {
 					@Override
 					public void onResponse(String response) {
 						//Log.d(TAG, response.toString());
@@ -72,8 +110,8 @@ public class StringRequestActivity extends Activity {
 						int a = result.indexOf("salePrice");
 						int b = result.indexOf("upc");
 						String finalResult;
-						finalResult = result.substring(a+11, b-2);
-						System.out.println("final result = " + finalResult);
+						//finalResult = result.substring(a+11, b-2);
+						//System.out.println("final result = " + finalResult);
 						msgResponse.setText(response.toString());
 						hideProgressDialog();
 					}
