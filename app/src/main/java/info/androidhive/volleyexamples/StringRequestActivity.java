@@ -72,7 +72,6 @@ import java.io.File;
 
 public class StringRequestActivity extends Activity {
 
-
 	private String TAG = StringRequestActivity.class.getSimpleName();
 	private Button btnStringReq;
 	private TextView msgResponse;
@@ -86,6 +85,8 @@ public class StringRequestActivity extends Activity {
 
 	// This tag will be used to cancel the request
 	private String tag_string_req = "string_req";
+
+    public String urlRes;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -103,12 +104,28 @@ public class StringRequestActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
+				MyTask myTask = null;
+				try {
+                    //myTask.delegate = this;
+
+                    myTask = new MyTask(StringRequestActivity.this, msgResponse, btnStringReq);
+                    //msgResponse text = (msgResponse)findViewById(R.id.msgResponse);
+                    //System.out.println("request html: " + msgResponse.getText().toString());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				myTask.execute();
+				btnStringReq.setEnabled(false);
+
+/*
 				try {
 					makeStringReq();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				*/
 			}
+
 		});
 	}
 
@@ -156,25 +173,6 @@ public class StringRequestActivity extends Activity {
 	 * */
 	private void makeStringReq() throws Exception {
 		showProgressDialog();
-		//StringRequest strReq = new StringRequest(Method.GET,
-		//"http://api.walmartlabs.com/v1/search?apiKey=52pcepcteuhhwx7gtg5z7dbe&query="
-		//+ "apples", new Response.Listener<String>() {
-
-
-		/*
-		String uri = "http://webservices.amazon.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=AKIAIDAFRAB6CFIGFNNA&AssociateTag=draft05a-20&Operation=ItemSearch&Keywords=the%20hunger%20games&SearchIndex=Books&Timestamp="
-				+ format + "&Signature=" + strHexSignature;
-		URL url = new URL(uri);
-		HttpURLConnection connection =
-				(HttpURLConnection) url.openConnection();
-		connection.setRequestMethod("GET");
-		connection.setRequestProperty("Accept", "application/xml");
-
-		InputStream xml = connection.getInputStream();
-		*/
-
-
-
 
 	SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ss'Z'");
 	String format = simpleDateFormat.format(new Date());
